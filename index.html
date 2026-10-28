@@ -38,7 +38,8 @@ svg{display:block}
 .tx::before{content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;background-image:var(--tex);background-size:var(--texsz,360px);opacity:var(--texop);border-radius:inherit}
 
 /* ===================== HALAMAN DEPAN ===================== */
-#hero{padding:calc(14px + env(safe-area-inset-top)) 12px 16px}
+#home{display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden}  /* halaman awal: bagian atas tetap, hanya daftar yang digeser */
+#hero{flex:none;padding:calc(8px + env(safe-area-inset-top)) 12px 6px}
 .hb{display:grid;grid-template-columns:1.32fr 1fr;grid-template-rows:auto auto;gap:12px;align-items:stretch;text-align:center;color:var(--accent2)}
 /* tiga kotak terpisah yang 'mengambang' di atas latar lewat bayangan */
 .hbx{position:relative;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px 8px;background:var(--paper);border:2px solid var(--accent2);border-radius:14px;overflow:hidden;color:var(--accent2);box-shadow:0 14px 26px -8px rgba(0,0,0,.34),0 4px 10px rgba(0,0,0,.18);animation:logoIn 1s cubic-bezier(.2,.7,.2,1) both}
@@ -66,20 +67,21 @@ svg{display:block}
 #credit:hover,#credit:focus-visible{background:var(--soft);outline:none}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
-#resume{margin:12px 14px 0}
+#resume{margin:4px 14px 0}
 .rcard{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:1px solid var(--soft);border-radius:14px;padding:12px 14px;background:var(--paper);box-shadow:0 1px 0 var(--soft)}
 .rcard small{display:block;color:var(--ink2);font-size:12px}
 .rcard b{font-size:15.5px}
 .rcard .go{margin-left:auto;color:var(--accent2);font-weight:700}
 
-#hbar{position:sticky;top:0;z-index:15;padding:10px 14px 8px;background:color-mix(in srgb,var(--bg) 94%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+#hbar{flex:none;position:relative;z-index:15;padding:4px 14px 6px;background:color-mix(in srgb,var(--bg) 94%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
 #q{width:100%;border:1px solid var(--soft);border-radius:12px;padding:11px 14px;font:inherit;font-size:15.5px;background:var(--paper);color:var(--ink);outline:none}
 #q:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 25%,transparent)}
 #q::placeholder{color:var(--ink2);opacity:.75}
-.tabs{display:flex;gap:6px;margin-top:8px}
+.tabs{display:flex;gap:6px;margin-top:6px}
 .tab{flex:1;border:1px solid var(--soft);background:transparent;border-radius:10px;padding:8px 6px;font-weight:600;font-size:14px;color:var(--ink2)}
 .tab[aria-selected=true]{background:var(--accent2);border-color:var(--accent2);color:var(--paper)}
-#hlist{padding:4px 14px 40px}
+#hscroll{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-bottom:calc(24px + env(safe-area-inset-bottom))}
+#hlist{padding:4px 14px 16px}
 .row{display:flex;align-items:center;gap:12px;width:100%;border:0;background:var(--paper);text-align:left;padding:10px 12px;margin:0 0 8px;border-radius:12px;box-shadow:0 0 0 1px var(--soft)}
 .row:active{transform:scale(.995)}
 .row .mid{flex:1;min-width:0}
@@ -322,7 +324,6 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
       </div>
     </div>
   </header>
-  <div id="resume"></div>
   <div id="hbar">
     <input id="q" type="search" inputmode="search" enterkeyhint="search" autocomplete="off" placeholder="Cari surat, ayat, atau 2:255" aria-label="Pencarian">
     <div class="tabs" role="tablist">
@@ -331,7 +332,10 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
       <button class="tab" role="tab" id="tab-b" data-t="b" aria-selected="false">Penanda</button>
     </div>
   </div>
-  <main id="hlist"></main>
+  <div id="hscroll">
+    <div id="resume"></div>
+    <main id="hlist"></main>
+  </div>
 </div>
 
 <!-- ===================== PEMBACA ===================== -->
@@ -684,7 +688,7 @@ function renderUpTo(k){
 }
 function openSurah(s,a,fromHash){
   s=Math.max(1,Math.min(114,s|0));var d=Q[s-1];a=Math.max(1,Math.min(d[3].length,a|0||1));
-  var fresh=!rd.open;homeY=window.scrollY||0;
+  var fresh=!rd.open;if(fresh)homeY=$('hscroll').scrollTop||0;
   $('home').hidden=true;$('reader').hidden=false;rd.open=true;
   rd.s=s;rd.n=d[3].length;rd.els=[];rd.rendered=0;rd.sel=0;rd.cur=a;rd.tick=0;
   $('ayl').innerHTML='';$('abar').hidden=true;
@@ -795,6 +799,7 @@ function renderResume(){
 }
 function renderList(){
   var L=$('hlist'),h='',q=$('q').value.trim();
+  $('hscroll').scrollTop=0;
   document.querySelector('.tabs').hidden=!!q;
   if(q){L.innerHTML=searchHTML(q);relayoutMedals(L);return}
   if(tab==='s'){for(var i=0;i<114;i++)h+=rowSurat(i)}
@@ -856,7 +861,7 @@ function route(){
 function showHome(){
   rd.open=false;$('reader').hidden=true;$('home').hidden=false;document.title="Al-Qur'an Digital — Mushaf Standar Indonesia (Kemenag RI)";
   renderResume();renderList();
-  window.scrollTo(0,homeY||0);
+  $('hscroll').scrollTop=homeY||0;
 }
 window.addEventListener('hashchange',route);
 
